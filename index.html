@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#3558d6">
+<title>Conteggio</title>
+<style>
+:root{--bg:#eef1f8;--card:#fff;--ink:#1b1f2e;--mut:#5b6478;--line:#c9d0e0;--acc:#3558d6;--accd:#2744b0;--tint:#e3e9fc;--field:#eaeefa;
+box-sizing:border-box}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Roboto,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:1rem}
+.bar{position:sticky;top:0;z-index:5;background:var(--acc);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 8px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 6px rgba(20,30,80,.35)}
+.bar h1{margin:0;font-size:1.1rem;font-weight:500}
+.foot{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--acc);color:#fff;padding:10px 20px calc(env(safe-area-inset-bottom,0px) + 10px);box-shadow:0 -2px 8px rgba(20,30,80,.35)}
+.foot div{max-width:480px;margin:0 auto;display:flex;align-items:baseline;justify-content:space-between}
+.foot small{font-size:.8rem;letter-spacing:.14em;font-weight:500;opacity:.9}
+.foot b{font-size:2.2rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.wrap{max-width:480px;margin:0 auto;padding:10px 8px calc(env(safe-area-inset-bottom,0px) + 96px)}
+.card{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 1px 3px rgba(20,30,80,.14),0 2px 10px rgba(20,30,80,.07)}
+.hd{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 6px}
+.hd.m{margin-top:12px}
+h2{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.12em;color:var(--acc)}
+.sm{font-size:.8rem;color:var(--mut)}
+.sm b{font-size:.95rem;color:var(--accd);font-variant-numeric:tabular-nums}
+.g{display:grid;gap:6px;align-items:center}
+.g.a{grid-template-columns:4.8rem minmax(0,1fr) 3.4rem}
+.g.c{grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr)}
+.g.y{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:8px}
+.lb,label{font-weight:600;font-size:.85rem}
+input,select{width:100%;min-height:36px;font:inherit;font-size:1rem;color:var(--ink);background:var(--field);border:0;border-bottom:2px solid var(--line);border-radius:8px 8px 0 0;padding:4px 8px}
+input{text-align:right}
+select{padding:4px 2px;text-align:center;text-align-last:center}
+input:focus,select:focus{outline:0;border-bottom-color:var(--acc);background:var(--tint)}
+.r{text-align:right;font-variant-numeric:tabular-nums;font-size:1rem;font-weight:600}
+.v{padding-right:8px}
+.cell label{display:block;margin-bottom:2px}
+.rs{text-align:right;font-size:.72rem;color:var(--mut);padding-right:6px;margin-top:2px}
+.rs b{font-size:.85rem;color:var(--accd);font-variant-numeric:tabular-nums}
+.sv{display:flex;gap:8px;align-items:center;margin-top:12px}
+#fname{text-align:left}
+.btn{font:inherit;font-weight:600;font-size:.9rem;border:0;cursor:pointer;border-radius:999px;padding:8px 16px;white-space:nowrap}
+.btn.f{background:var(--acc);color:#fff;box-shadow:0 2px 5px rgba(20,30,80,.3)}
+.btn.f:active{background:var(--accd)}
+.btn.t{background:none;color:#b3261e;padding:4px 6px;font-size:.8rem}
+.btn:focus-visible{outline:3px solid #9db4ff;outline-offset:2px}
+.ft{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+#msg{min-height:1.1em;font-size:.78rem;color:var(--mut)}
+</style>
+</head>
+<body>
+<header class="bar">
+  <h1>Conteggio</h1>
+</header>
+<main class="wrap"><section class="card">
+  <div class="hd"><h2>MONTE ORE</h2><div class="sm">ORE <b id="ore">0</b> &nbsp;·&nbsp; ×4 <b id="ore4">0</b></div></div>
+  <div class="g a">
+    <label for="sett">Settimana</label><input id="sett" inputmode="decimal" aria-label="Giorni settimana"><select id="selS" aria-label="Ore al giorno settimana"><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+    <label for="sab">Sabato</label><input id="sab" inputmode="decimal" aria-label="Giorni sabato"><select id="selB" aria-label="Ore al giorno sabato"><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+  </div>
+
+  <div class="hd m"><h2>CONTRATTI</h2></div>
+  <div class="g c">
+    <label for="matt">MATT</label><input id="matt" inputmode="decimal">
+    <label for="pom">POM</label><input id="pom" inputmode="decimal">
+    <div class="lb">ENERGIA</div><div class="r v" id="en">0</div>
+    <label for="ko">KO</label><input id="ko" inputmode="decimal">
+  </div>
+  <div class="g y">
+    <div class="cell"><label for="iban">IBAN</label><input id="iban" inputmode="decimal"><div class="rs">×15 = <b id="iban15">0</b></div></div>
+    <div class="cell"><label for="boll">BOLL</label><input id="boll" inputmode="decimal"><div class="rs">×9 = <b id="boll9">0</b></div></div>
+    <div class="cell"><label for="prot">PROTETTA</label><input id="prot" inputmode="decimal"><div class="rs">×4 = <b id="prot4">0</b></div></div>
+  </div>
+
+  <div class="sv"><input id="fname" aria-label="Nome del file" placeholder="Nome file"><button class="btn f" id="save">Salva .txt</button></div>
+  <div class="ft"><div id="msg" role="status"></div><button class="btn t" id="reset">Azzera tutto</button></div>
+</section></main>
+<footer class="foot"><div><small>TOTALE</small><b id="tot">0</b></div></footer>
+<script>
+/* ============================================================
+   SINCRONIZZAZIONE TRA DISPOSITIVI (Firebase Realtime Database)
+   1) Incolla qui sotto l'indirizzo del tuo database
+   2) Cambia SYNC_PATH con una parola lunga e segreta (solo tua)
+   Se DB_URL resta vuoto, l'app salva solo su questo dispositivo.
+   ============================================================ */
+var DB_URL  = "https://conteggioore-19eab-default-rtdb.europe-west1.firebasedatabase.app";
+var SYNC_PATH = "conteggio_h4w9qz7mk2xv8t";
+
+var KEY="conteggio-v3",IDS=["sett","sab","selS","selB","ko","matt","pom","iban","boll","prot"],S={},dirty=false,pushTimer=null;
+var SYNC_URL = DB_URL ? DB_URL.replace(/\/+$/,"")+"/"+SYNC_PATH+".json" : "";
+try{S=JSON.parse(localStorage.getItem(KEY))||{};}catch(e){S={};}
+function n(v){var x=parseFloat(String(v||"").replace(",","."));return isNaN(x)?0:x;}
+function f(x){return (Math.round(x*100)/100).toLocaleString("it-IT",{maximumFractionDigits:2});}
+function $(i){return document.getElementById(i);}
+function st(t){$("msg").textContent=t;}
+function calc(){
+  var ore=n($("sett").value)*n($("selS").value)+n($("sab").value)*n($("selB").value);
+  var o4=ore*4,i15=n($("iban").value)*15,b9=n($("boll").value)*9,p4=n($("prot").value)*4;
+  $("ore").textContent=f(ore);$("ore4").textContent=f(o4);
+  $("iban15").textContent=f(i15);$("boll9").textContent=f(b9);$("prot4").textContent=f(p4);
+  $("en").textContent=f(n($("matt").value)+n($("pom").value));
+  $("tot").textContent=f(o4+i15+b9+p4);
+}
+
+/* ---- Salvataggio locale: localStorage + IndexedDB (copia di sicurezza) ---- */
+function idb(cb){try{var r=indexedDB.open("conteggio",1);r.onupgradeneeded=function(){r.result.createObjectStore("k");};r.onsuccess=function(){cb(r.result);};r.onerror=function(){cb(null);};}catch(e){cb(null);}}
+function storeLocal(js){
+  try{localStorage.setItem(KEY,js);}catch(e){}
+  idb(function(db){if(!db)return;try{db.transaction("k","readwrite").objectStore("k").put(js,KEY);}catch(e){}});
+}
+
+/* ---- Salvataggio cloud ---- */
+function push(){
+  if(!SYNC_URL)return;
+  var js=JSON.stringify(S);
+  fetch(SYNC_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:js})
+    .then(function(r){if(!r.ok)throw 0;st("Sincronizzato ✓");})
+    .catch(function(){st("Offline: salvato sul dispositivo, si sincronizza dopo");dirty=true;});
+}
+function schedulePush(){clearTimeout(pushTimer);pushTimer=setTimeout(push,500);}
+
+function readFields(){IDS.forEach(function(i){S[i]=$(i).value;});S._t=Date.now();}
+function save(){readFields();storeLocal(JSON.stringify(S));schedulePush();}
+
+function apply(D){
+  IDS.forEach(function(i){
+    var def=(i=="selS"||i=="selB")?"4":"";
+    $(i).value=(D[i]!==undefined&&D[i]!==null)?D[i]:def;
+  });
+  calc();
+}
+
+/* ---- Lettura dal cloud: vince sempre il dato più recente ---- */
+function pull(){
+  if(!SYNC_URL)return;
+  var a=document.activeElement;
+  if(a&&(a.tagName=="INPUT"||a.tagName=="SELECT")&&a.id!="fname")return; /* non disturbo mentre scrivi */
+  fetch(SYNC_URL,{cache:"no-store"}).then(function(r){return r.json();}).then(function(D){
+    if(D&&typeof D==="object"&&(D._t||0)>(S._t||0)){
+      S=D;apply(S);storeLocal(JSON.stringify(S));st("Aggiornato da altro dispositivo ✓");
+    }else if(dirty&&(S._t||0)>((D&&D._t)||0)){dirty=false;push();}
+    else if(!D&&S._t){push();} /* database vuoto: carico i dati di questo dispositivo */
+  }).catch(function(){});
+}
+
+/* ---- Avvio ---- */
+apply(S);
+IDS.forEach(function(i){$(i).addEventListener("input",function(){dirty=true;save();calc();});});
+idb(function(db){
+  if(!db)return;
+  try{var q=db.transaction("k").objectStore("k").get(KEY);
+    q.onsuccess=function(){var D=null;try{D=JSON.parse(q.result);}catch(e){}
+      if(D&&(D._t||0)>(S._t||0)){S=D;apply(S);try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}};
+  }catch(e){}
+});
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
+pull();
+setInterval(pull,8000);
+window.addEventListener("focus",pull);
+window.addEventListener("online",function(){pull();});
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden){if(dirty){readFields();storeLocal(JSON.stringify(S));push();}}
+  else pull();
+});
+window.addEventListener("pagehide",function(){if(dirty){readFields();storeLocal(JSON.stringify(S));}});
+
+/* ---- Azzera: l'unico modo per cancellare (anche sugli altri dispositivi) ---- */
+$("reset").onclick=function(){
+  if(confirm("Azzerare tutti i campi su TUTTI i dispositivi?")){
+    S={_t:Date.now()};apply(S);
+    storeLocal(JSON.stringify(S));
+    dirty=false;push();calc();
+  }
+};
+
+/* ---- Export .txt ---- */
+function t(x){return String(Math.round(x*100)/100).replace(".",",");}
+function pad(a,l){a=String(a);while(a.length<l)a+=" ";return a;}
+function row(l,r){var W=55,g=W-l.length-r.length;return l+(g<2?"  ":new Array(g+1).join(" "))+r;}
+function buildTxt(){
+  var W=55,D=new Array(W+1).join("-");
+  var sett=n($("sett").value),sab=n($("sab").value);
+  var expr=t(sett)+"x"+$("selS").value+(sab>0?"+"+t(sab)+"x"+$("selB").value:"");
+  var ore=sett*n($("selS").value)+sab*n($("selB").value);
+  var matt=n($("matt").value),pom=n($("pom").value);
+  var i15=n($("iban").value)*15,b9=n($("boll").value)*9,p4=n($("prot").value)*4;
+  var tot=ore*4+i15+b9+p4;
+  return [
+    "MONTE ORE",
+    row(pad(expr,16)+t(ore)+"ORE",t(ore*4)),D,
+    "CONTRATTI",
+    row(t(n($("ko").value))+" KO","0"),
+    t(matt+pom)+" ENERGIA",t(matt)+" MATT",t(pom)+" POM",D,
+    row(t(n($("iban").value))+" iban",t(i15)),"",
+    row(t(n($("boll").value))+" boll",t(b9)),D,
+    row(t(n($("prot").value))+"  PROTETTA",t(p4)),D,
+    row("",t(tot))
+  ].join("\n")+"\n";
+}
+$("fname").value=new Date().toLocaleString("it-IT",{month:"long"}).toUpperCase();
+$("save").onclick=function(){
+  var name=$("fname").value.trim().replace(/\.txt$/i,"").replace(/[\\\/:*?"<>|]/g,"")||"conteggio";
+  var blob=new Blob([buildTxt()],{type:"text/plain;charset=utf-8"});
+  var url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=name+".txt";document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+  st("Scaricato "+name+".txt");
+};
+calc();
+</script>
+</body>
+</html>
