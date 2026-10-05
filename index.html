@@ -176,9 +176,14 @@ $("reset").onclick=function(){
 
 /* ---- Export .txt ---- */
 function t(x){return String(Math.round(x*100)/100).replace(".",",");}
-function pad(a,l){a=String(a);while(a.length<l)a+=" ";return a;}
-var LINEW=55,NUMW=52; /* LINEW = lunghezza trattini, NUMW = colonna dove finiscono i numeri a destra */
-function row(l,r){var W=NUMW,g=W-l.length-r.length;return l+(g<2?"  ":new Array(g+1).join(" "))+r;}
+/* Allineamento per il carattere DejaVu Sans (largo variabile): misuro la larghezza reale di ogni riga.
+   TARGET = dove finiscono i numeri a destra, X0 = dove inizia la colonna delle ore. Aumenta/diminuisci per spostare. */
+var LINEW=55,TARGET=36900,X0=12933,SPW=651;
+var CW=[651,821,942,1716,1303,1946,1597,563,799,799,1024,1716,651,739,651,690,1303,1303,1303,1303,1303,1303,1303,1303,1303,1303,690,690,1716,1716,1716,1087,2048,1401,1405,1430,1577,1294,1178,1587,1540,604,604,1343,1141,1767,1532,1612,1235,1612,1423,1300,1251,1499,1401,2025,1403,1251,1403,799,690,799,1716,1024,1024,1255,1300,1126,1300,1260,721,1300,1298,569,569,1186,569,1995,1298,1253,1300,1300,842,1067,803,1298,1212,1675,1212,1212,1075,1303,690,1303,1716];
+function sw(s){var x=0,i,c;for(i=0;i<s.length;i++){c=s.charCodeAt(i);x+=(c>=32&&c<=126)?CW[c-32]:1300;}return x;}
+function spc(k){return new Array(Math.max(k,0)+1).join(" ");}
+function row(l,r){var g=Math.round((TARGET-sw(l)-sw(r))/SPW);if(g<2)g=2;return l+spc(g)+r;}
+function padw(a,x){var g=Math.round((x-sw(a))/SPW);if(g<1)g=1;return a+spc(g);}
 function buildTxt(){
   var D=new Array(LINEW+1).join("-");
   var sett=n($("sett").value),sab=n($("sab").value);
@@ -189,7 +194,7 @@ function buildTxt(){
   var tot=ore*4+i15+b9+p4;
   return [
     "MONTE ORE",
-    row(pad(expr,16)+t(ore)+"ORE",t(ore*4)),D,
+    row(padw(expr,X0)+t(ore)+"ORE",t(ore*4)),D,
     "CONTRATTI",
     row(t(n($("ko").value))+" KO","0"),
     t(matt+pom)+" ENERGIA",t(matt)+" MATT",t(pom)+" POM",D,
