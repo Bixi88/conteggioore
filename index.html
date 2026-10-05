@@ -177,9 +177,10 @@ $("reset").onclick=function(){
 /* ---- Export .txt ---- */
 function t(x){return String(Math.round(x*100)/100).replace(".",",");}
 function pad(a,l){a=String(a);while(a.length<l)a+=" ";return a;}
-function row(l,r){var W=55,g=W-l.length-r.length;return l+(g<2?"  ":new Array(g+1).join(" "))+r;}
+var LINEW=55,NUMW=52; /* LINEW = lunghezza trattini, NUMW = colonna dove finiscono i numeri a destra */
+function row(l,r){var W=NUMW,g=W-l.length-r.length;return l+(g<2?"  ":new Array(g+1).join(" "))+r;}
 function buildTxt(){
-  var W=55,D=new Array(W+1).join("-");
+  var D=new Array(LINEW+1).join("-");
   var sett=n($("sett").value),sab=n($("sab").value);
   var expr=t(sett)+"x"+$("selS").value+(sab>0?"+"+t(sab)+"x"+$("selB").value:"");
   var ore=sett*n($("selS").value)+sab*n($("selB").value);
