@@ -50,6 +50,9 @@ input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--acc)
 #msg{flex:1;min-height:1.1em;font-size:.78rem;color:var(--mut)}
 .ft div.bt{display:flex;gap:2px;flex:none}
 .btn.t.i{color:var(--accd)}
+.dz{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);text-align:center}
+.btn.d{background:#fdecea;color:#b3261e;border:2px solid #e7b4b0;padding:8px 26px}
+.btn.d:active{background:#f6cfcb}
 </style>
 </head>
 <body>
@@ -81,9 +84,10 @@ input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--acc)
 
   <div class="sv"><input id="fname" aria-label="Nome del file" placeholder="Nome file"><button class="btn f" id="save">Salva .txt</button></div>
   <div class="sv"><button class="btn f" id="sync" style="flex:1">Sincronizza</button></div>
-  <div class="ft"><div id="msg" role="status"></div><div class="bt"><button class="btn t i" id="imp">Importa .txt</button><button class="btn t" id="reset">Azzera tutto</button></div></div>
+  <div class="ft"><div id="msg" role="status"></div><div class="bt"><button class="btn t i" id="imp">Importa .txt</button></div></div>
   <input type="file" id="impf" accept=".txt,text/plain" hidden>
   <div class="rs" id="ver"></div>
+  <div class="dz"><button class="btn d" id="reset">Azzera tutto</button></div>
 </section></main>
 <footer class="foot"><div><small>TOTALE</small><b id="tot">0</b></div></footer>
 <script>
@@ -136,7 +140,7 @@ function apply(D){
    APP_VERSION cambia a ogni nuova versione del file. All'apertura e quando torni sull'app,
    la pagina controlla (saltando la cache) se online c'è una versione diversa e, se sì, si ricarica.
    I dati sono già salvati a ogni modifica, quindi il ricaricamento non fa perdere nulla. */
-var APP_VERSION="20261010-0843";
+var APP_VERSION="20261010-085456";
 function go(u){location.replace(u);}
 function checkUpdate(){
   try{
@@ -162,12 +166,10 @@ function sync(){
     var ct=(D&&typeof D==="object"&&D._t)||0,lt=S._t||0;
     if(!ct&&!lt){st("Niente da sincronizzare");return;}
     if(ct===lt){st("Già sincronizzato ✓");return;}
-    if(ct>lt){ /* il cloud è più recente: scarico (chiedo conferma se ho dati locali) */
-      if(lt&&!confirm("Sul cloud ci sono dati più recenti ("+fd(ct)+") di quelli di questo dispositivo ("+fd(lt)+").\n\nScaricarli e SOSTITUIRE i dati di questo dispositivo?")){st("Annullato: nessuna modifica");return;}
-      S=D;apply(S);storeLocal(JSON.stringify(S));st("Scaricato dal cloud ✓");return;
+    if(ct>lt){ /* il cloud è più recente: scarico */
+      S=D;apply(S);storeLocal(JSON.stringify(S));st("Scaricato dal cloud ✓ (dati del "+fd(ct)+")");return;
     }
-    /* questo dispositivo è più recente: carico (chiedo conferma se sul cloud c'è già qualcosa) */
-    if(ct&&!confirm("I dati di questo dispositivo ("+fd(lt)+") sono più recenti di quelli sul cloud ("+fd(ct)+").\n\nCaricarli e SOSTITUIRE i dati sul cloud?")){st("Annullato: nessuna modifica");return;}
+    /* questo dispositivo è più recente: carico */
     return fetch(SYNC_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(S)})
       .then(function(r){if(!r.ok)throw 0;st("Caricato sul cloud ✓");});
   }).catch(function(){st("Sincronizzazione non riuscita: controlla la connessione");})
@@ -232,7 +234,7 @@ function buildTxt(){
     row("",t(tot))
   ];
   var nt=$("note").value.replace(/\r\n?/g,"\n").replace(/^(?:[ \t]*\n)+/,"").replace(/\s+$/,"");
-  if(nt)L.push("","","Note:","",nt);
+  if(nt)L.push("","","NOTE:","",nt);
   return L.join("\n")+"\n";
 }
 /* ---- Import .txt (stesso formato del file salvato) ---- */
