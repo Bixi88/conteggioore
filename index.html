@@ -48,8 +48,8 @@ input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--acc)
 .btn:focus-visible{outline:3px solid #9db4ff;outline-offset:2px}
 .ft{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
 #msg{flex:1;min-height:1.1em;font-size:.78rem;color:var(--mut)}
-.ft div.bt{display:flex;gap:2px;flex:none}
-.btn.t.i{color:var(--accd)}
+.sv.two{margin-top:8px}
+.sv.two .btn{flex:1}
 .dz{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);text-align:center}
 .btn.d{background:#fdecea;color:#b3261e;border:2px solid #e7b4b0;padding:8px 26px}
 .btn.d:active{background:#f6cfcb}
@@ -82,9 +82,10 @@ input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--acc)
   <div class="hd m"><h2>NOTE</h2></div>
   <textarea id="note" rows="1" aria-label="Note" placeholder="Scrivi qui…"></textarea>
 
-  <div class="sv"><input id="fname" aria-label="Nome del file" placeholder="Nome file"><button class="btn f" id="save">Salva .txt</button></div>
+  <div class="sv"><input id="fname" aria-label="Nome del file" placeholder="Nome file"></div>
+  <div class="sv two"><button class="btn f" id="save">Salva .txt</button><button class="btn f" id="imp">Importa .txt</button></div>
   <div class="sv"><button class="btn f" id="sync" style="flex:1">Sincronizza</button></div>
-  <div class="ft"><div id="msg" role="status"></div><div class="bt"><button class="btn t i" id="imp">Importa .txt</button></div></div>
+  <div class="ft"><div id="msg" role="status"></div></div>
   <input type="file" id="impf" accept=".txt,text/plain" hidden>
   <div class="rs" id="ver"></div>
   <div class="dz"><button class="btn d" id="reset">Azzera tutto</button></div>
@@ -140,7 +141,7 @@ function apply(D){
    APP_VERSION cambia a ogni nuova versione del file. All'apertura e quando torni sull'app,
    la pagina controlla (saltando la cache) se online c'è una versione diversa e, se sì, si ricarica.
    I dati sono già salvati a ogni modifica, quindi il ricaricamento non fa perdere nulla. */
-var APP_VERSION="20261010-085456";
+var APP_VERSION="20261010-085744";
 function go(u){location.replace(u);}
 function checkUpdate(){
   try{
