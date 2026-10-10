@@ -83,6 +83,7 @@ input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--acc)
   <div class="sv"><button class="btn f" id="sync" style="flex:1">Sincronizza</button></div>
   <div class="ft"><div id="msg" role="status"></div><div class="bt"><button class="btn t i" id="imp">Importa .txt</button><button class="btn t" id="reset">Azzera tutto</button></div></div>
   <input type="file" id="impf" accept=".txt,text/plain" hidden>
+  <div class="rs" id="ver"></div>
 </section></main>
 <footer class="foot"><div><small>TOTALE</small><b id="tot">0</b></div></footer>
 <script>
@@ -131,6 +132,27 @@ function apply(D){
   calc();grow();
 }
 
+/* ---- Aggiornamento automatico dell'app ----
+   APP_VERSION cambia a ogni nuova versione del file. All'apertura e quando torni sull'app,
+   la pagina controlla (saltando la cache) se online c'è una versione diversa e, se sì, si ricarica.
+   I dati sono già salvati a ogni modifica, quindi il ricaricamento non fa perdere nulla. */
+var APP_VERSION="20261010-0843";
+function go(u){location.replace(u);}
+function checkUpdate(){
+  try{
+    var a=document.activeElement;
+    if(a&&(a.tagName=="INPUT"||a.tagName=="SELECT"||a.tagName=="TEXTAREA"))return; /* non interrompo mentre scrivi */
+    var u=location.href.split("#")[0].split("?")[0];
+    fetch(u+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():"";}).then(function(h){
+      var m=h.match(/APP_VERSION\s*=\s*"([^"]+)"/);
+      if(!m||m[1]===APP_VERSION)return;
+      var k="upd-"+m[1];
+      try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1");}catch(e){} /* una sola volta per versione: niente cicli */
+      go(u+"?v="+encodeURIComponent(m[1]));
+    }).catch(function(){});
+  }catch(e){}
+}
+
 /* ---- Sincronizzazione manuale: parte solo dal tasto "Sincronizza" ---- */
 function fd(t){return new Date(t).toLocaleString("it-IT",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});}
 function sync(){
@@ -166,6 +188,10 @@ idb(function(db){
 });
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
 $("sync").onclick=sync;
+$("ver").textContent="v"+APP_VERSION;
+checkUpdate();
+document.addEventListener("visibilitychange",function(){if(!document.hidden)checkUpdate();});
+window.addEventListener("pageshow",function(e){if(e.persisted)checkUpdate();});
 
 /* ---- Azzera: cancella solo su questo dispositivo (il cloud cambia solo con "Sincronizza") ---- */
 $("reset").onclick=function(){
