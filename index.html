@@ -141,7 +141,7 @@ function apply(D){
    APP_VERSION cambia a ogni nuova versione del file. All'apertura e quando torni sull'app,
    la pagina controlla (saltando la cache) se online c'è una versione diversa e, se sì, si ricarica.
    I dati sono già salvati a ogni modifica, quindi il ricaricamento non fa perdere nulla. */
-var APP_VERSION="20261010-085744";
+var APP_VERSION="20261019-120000";
 function go(u){location.replace(u);}
 function checkUpdate(){
   try{
@@ -160,20 +160,21 @@ function checkUpdate(){
 
 /* ---- Sincronizzazione manuale: parte solo dal tasto "Sincronizza" ---- */
 function fd(t){return new Date(t).toLocaleString("it-IT",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});}
-function sync(){
-  if(!SYNC_URL){st("Sincronizzazione non configurata");return;}
-  var b=$("sync");b.disabled=true;st("Sincronizzo…");
+function sync(pre){
+  function m(t){st(pre?pre+" · "+t:t);}
+  if(!SYNC_URL){m("Sincronizzazione non configurata");return;}
+  var b=$("sync");b.disabled=true;m("Sincronizzo…");
   fetch(SYNC_URL,{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(D){
     var ct=(D&&typeof D==="object"&&D._t)||0,lt=S._t||0;
-    if(!ct&&!lt){st("Niente da sincronizzare");return;}
-    if(ct===lt){st("Già sincronizzato ✓");return;}
+    if(!ct&&!lt){m("Niente da sincronizzare");return;}
+    if(ct===lt){m("Già sincronizzato ✓");return;}
     if(ct>lt){ /* il cloud è più recente: scarico */
-      S=D;apply(S);storeLocal(JSON.stringify(S));st("Scaricato dal cloud ✓ (dati del "+fd(ct)+")");return;
+      S=D;apply(S);storeLocal(JSON.stringify(S));m("Scaricato dal cloud ✓ (dati del "+fd(ct)+")");return;
     }
     /* questo dispositivo è più recente: carico */
     return fetch(SYNC_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(S)})
-      .then(function(r){if(!r.ok)throw 0;st("Caricato sul cloud ✓");});
-  }).catch(function(){st("Sincronizzazione non riuscita: controlla la connessione");})
+      .then(function(r){if(!r.ok)throw 0;m("Caricato sul cloud ✓");});
+  }).catch(function(){m("Sincronizzazione non riuscita: controlla la connessione");})
     .then(function(){b.disabled=false;});
 }
 
@@ -190,7 +191,7 @@ idb(function(db){
   }catch(e){}
 });
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
-$("sync").onclick=sync;
+$("sync").onclick=function(){sync();};
 $("ver").textContent="v"+APP_VERSION;
 checkUpdate();
 document.addEventListener("visibilitychange",function(){if(!document.hidden)checkUpdate();});
@@ -283,6 +284,7 @@ $("save").onclick=function(){
   a.href=url;a.download=name+".txt";document.body.appendChild(a);a.click();a.remove();
   setTimeout(function(){URL.revokeObjectURL(url);},2000);
   st("Scaricato "+name+".txt");
+  sync("Scaricato "+name+".txt"); /* dopo il salvataggio sincronizza anche il cloud */
 };
 calc();
 </script>
