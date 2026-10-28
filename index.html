@@ -25,7 +25,16 @@ h2{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.12em;color:var(--ac
 .sm{font-size:.8rem;color:var(--mut)}
 .sm b{font-size:.95rem;color:var(--accd);font-variant-numeric:tabular-nums}
 .g{display:grid;gap:6px;align-items:center}
-.g.a{grid-template-columns:4.8rem minmax(0,1fr) 3.4rem}
+.g.a{grid-template-columns:4.8rem minmax(0,1fr) 3.4rem 1.9rem}
+.g.a>label{grid-column:1}.g.a>input{grid-column:2}.g.a>select{grid-column:3}
+#ex{display:grid;gap:6px;margin-top:6px}
+#ex:empty{margin:0}
+.g.a.er>.ds{grid-column:1/3}.g.a.er>.hs{grid-column:3}.g.a.er>.xb{grid-column:4}
+.er .hid{visibility:hidden}
+.xb{min-height:36px;width:100%;border:0;background:none;color:var(--mut);font:inherit;font-size:1.3rem;line-height:1;cursor:pointer;border-radius:50%;padding:0}
+.xb:active{background:var(--tint)}
+.xb:focus-visible{outline:3px solid #9db4ff;outline-offset:1px}
+.btn.l{background:none;color:var(--acc);padding:6px 4px;font-size:.85rem;margin-top:4px}
 .g.c{grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr)}
 .g.y{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:8px}
 .lb,label{font-weight:600;font-size:.85rem}
@@ -65,6 +74,8 @@ input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--acc)
     <label for="sett">Settimana</label><input id="sett" inputmode="decimal" aria-label="Giorni settimana"><select id="selS" aria-label="Ore al giorno settimana"><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
     <label for="sab">Sabato</label><input id="sab" inputmode="decimal" aria-label="Giorni sabato"><select id="selB" aria-label="Ore al giorno sabato"><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
   </div>
+  <div id="ex"></div>
+  <button class="btn l" id="addx" type="button">+ Giorno singolo</button>
 
   <div class="hd m"><h2>CONTRATTI</h2></div>
   <div class="g c">
@@ -102,7 +113,7 @@ input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--acc)
 var DB_URL  = "https://conteggioore-19eab-default-rtdb.europe-west1.firebasedatabase.app";
 var SYNC_PATH = "conteggio_h4w9qz7mk2xv8t";
 
-var KEY="conteggio-v3",IDS=["sett","sab","selS","selB","ko","matt","pom","iban","boll","prot","note"],S={},TOT=0;
+var KEY="conteggio-v3",IDS=["sett","sab","selS","selB","ko","matt","pom","iban","boll","prot","note"],S={},TOT=0,EX=[],HRS=["4","5","6","7","8"];
 var SYNC_URL = DB_URL ? DB_URL.replace(/\/+$/,"")+"/"+SYNC_PATH+".json" : "";
 try{S=JSON.parse(localStorage.getItem(KEY))||{};}catch(e){S={};}
 function n(v){var x=parseFloat(String(v||"").replace(",","."));return isNaN(x)?0:x;}
@@ -111,12 +122,61 @@ function $(i){return document.getElementById(i);}
 function st(t){$("msg").textContent=t;}
 function grow(){var a=$("note");a.style.height="auto";a.style.height=(a.scrollHeight+a.offsetHeight-a.clientHeight)+"px";}
 function calc(){
-  var ore=n($("sett").value)*n($("selS").value)+n($("sab").value)*n($("selB").value);
+  var ore=n($("sett").value)*n($("selS").value)+n($("sab").value)*n($("selB").value)+exHours();
   var o4=ore*4,i15=n($("iban").value)*15,b9=n($("boll").value)*9,p4=n($("prot").value)*4;
   $("ore").textContent=f(ore);$("ore4").textContent=f(o4);
   $("iban15").textContent=f(i15);$("boll9").textContent=f(b9);$("prot4").textContent=f(p4);
   $("en").textContent=f(n($("matt").value)+n($("pom").value));
   TOT=o4+i15+b9+p4;$("tot").textContent=f(TOT);
+}
+
+/* ---- Giorni singoli (ore di un giorno specifico del mese corrente) ---- */
+function dim(){var d=new Date();return new Date(d.getFullYear(),d.getMonth()+1,0).getDate();}
+function dlab(d){
+  var now=new Date(),x=new Date(now.getFullYear(),now.getMonth(),d),w="";
+  try{w=x.toLocaleDateString("it-IT",{weekday:"short"}).replace(".","");}catch(e){}
+  return d+(w?" · "+w:"");
+}
+function cleanEx(a){
+  var out=[],seen={};
+  if(a&&typeof a==="object"&&!Array.isArray(a))a=Object.keys(a).map(function(k){return a[k];});
+  if(!Array.isArray(a))return out;
+  a.forEach(function(e){
+    if(!e||typeof e!=="object")return;
+    var d=parseInt(e.d,10);
+    if(isNaN(d)||d<1||d>31||seen[d])return;
+    seen[d]=1;
+    out.push({d:String(d),h:HRS.indexOf(String(e.h))>=0?String(e.h):"4"});
+  });
+  return out;
+}
+function exHours(){var x=0;EX.forEach(function(e){if(e.d)x+=n(e.h);});return x;}
+function renderEx(){
+  var box=$("ex"),max=dim();
+  box.innerHTML="";
+  EX.forEach(function(e,i){
+    var row=document.createElement("div");row.className="g a er";
+    var ds=document.createElement("select");ds.className="ds";ds.setAttribute("aria-label","Giorno del mese");
+    var o=document.createElement("option");o.value="";o.textContent="Giorno…";ds.appendChild(o);
+    var top=Math.max(max,parseInt(e.d,10)||0); /* un giorno già salvato non sparisce mai, anche se il mese è cambiato */
+    for(var d=1;d<=top;d++){
+      var op=document.createElement("option");op.value=String(d);op.textContent=dlab(d);
+      var used=EX.some(function(z,j){return j!==i&&z.d===String(d);});
+      if(used)op.disabled=true; /* stesso giorno non due volte */
+      ds.appendChild(op);
+    }
+    ds.value=e.d||"";
+    var hs=document.createElement("select");hs.className="hs";hs.setAttribute("aria-label","Ore del giorno "+(e.d||""));
+    HRS.forEach(function(h){var q=document.createElement("option");q.textContent=h;hs.appendChild(q);});
+    hs.value=e.h;
+    var xb=document.createElement("button");xb.type="button";xb.className="xb";xb.textContent="×";xb.setAttribute("aria-label","Rimuovi giorno singolo");
+    if(!e.d){hs.classList.add("hid");hs.disabled=true;}
+    ds.onchange=function(){e.d=ds.value;if(e.d&&HRS.indexOf(e.h)<0)e.h="4";save();renderEx();calc();};
+    hs.onchange=function(){e.h=hs.value;save();calc();};
+    xb.onclick=function(){EX.splice(i,1);save();renderEx();calc();};
+    row.appendChild(ds);row.appendChild(hs);row.appendChild(xb);
+    box.appendChild(row);
+  });
 }
 
 /* ---- Salvataggio locale: localStorage + IndexedDB (copia di sicurezza) ---- */
@@ -126,7 +186,7 @@ function storeLocal(js){
   idb(function(db){if(!db)return;try{db.transaction("k","readwrite").objectStore("k").put(js,KEY);}catch(e){}});
 }
 
-function readFields(){IDS.forEach(function(i){S[i]=$(i).value;});S._t=Date.now();}
+function readFields(){IDS.forEach(function(i){S[i]=$(i).value;});S.extra=EX.map(function(e){return {d:e.d,h:e.h};});S._t=Date.now();}
 function save(){readFields();storeLocal(JSON.stringify(S));}
 
 function apply(D){
@@ -134,6 +194,7 @@ function apply(D){
     var def=(i=="selS"||i=="selB")?"4":"";
     $(i).value=(D[i]!==undefined&&D[i]!==null)?D[i]:def;
   });
+  EX=cleanEx(D.extra);renderEx();
   calc();grow();
 }
 
@@ -141,7 +202,7 @@ function apply(D){
    APP_VERSION cambia a ogni nuova versione del file. All'apertura e quando torni sull'app,
    la pagina controlla (saltando la cache) se online c'è una versione diversa e, se sì, si ricarica.
    I dati sono già salvati a ogni modifica, quindi il ricaricamento non fa perdere nulla. */
-var APP_VERSION="20261019-120000";
+var APP_VERSION="20261028-100000";
 function go(u){location.replace(u);}
 function checkUpdate(){
   try{
@@ -192,6 +253,12 @@ idb(function(db){
 });
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
 $("sync").onclick=function(){sync();};
+$("addx").onclick=function(){
+  if(EX.some(function(e){return !e.d;}))return; /* c'è già una riga vuota da compilare */
+  if(EX.length>=31){st("Hai già inserito tutti i giorni");return;}
+  EX.push({d:"",h:"4"});renderEx();
+  var s=document.querySelectorAll("#ex .ds");if(s.length)s[s.length-1].focus();
+};
 $("ver").textContent="v"+APP_VERSION;
 checkUpdate();
 document.addEventListener("visibilitychange",function(){if(!document.hidden)checkUpdate();});
@@ -220,7 +287,8 @@ function buildTxt(){
   var D=new Array(LINEW+1).join("-");
   var sett=n($("sett").value),sab=n($("sab").value);
   var expr=t(sett)+"x"+$("selS").value+(sab>0?"+"+t(sab)+"x"+$("selB").value:"");
-  var ore=sett*n($("selS").value)+sab*n($("selB").value);
+  var ore=sett*n($("selS").value)+sab*n($("selB").value)+exHours();
+  var exs=EX.filter(function(e){return e.d;}).sort(function(a,b){return a.d-b.d;}).map(function(e){return e.d+" ("+e.h+"h)";});
   var matt=n($("matt").value),pom=n($("pom").value);
   var i15=n($("iban").value)*15,b9=n($("boll").value)*9,p4=n($("prot").value)*4;
   var tot=ore*4+i15+b9+p4;
@@ -235,17 +303,19 @@ function buildTxt(){
     row(t(n($("prot").value))+"  PROTETTA",t(p4)),D,
     row("",t(tot))
   ];
+  if(exs.length)L.splice(2,0,"GIORNI SINGOLI: "+exs.join(", "));
   var nt=$("note").value.replace(/\r\n?/g,"\n").replace(/^(?:[ \t]*\n)+/,"").replace(/\s+$/,"");
   if(nt)L.push("","","NOTE:","",nt);
   return L.join("\n")+"\n";
 }
 /* ---- Import .txt (stesso formato del file salvato) ---- */
 function parseTxt(txt){
-  var lines=txt.replace(/^\uFEFF/,"").split(/\r?\n/),D={sett:"",sab:"",selS:"4",selB:"4",ko:"",matt:"",pom:"",iban:"",boll:"",prot:"",note:""},i,m,L,seen=false,found=false,N="[\\d.,]+";
+  var lines=txt.replace(/^\uFEFF/,"").split(/\r?\n/),D={sett:"",sab:"",selS:"4",selB:"4",ko:"",matt:"",pom:"",iban:"",boll:"",prot:"",note:"",extra:[]},i,m,L,seen=false,found=false,N="[\\d.,]+";
   for(i=0;i<lines.length;i++){
     L=lines[i];
     if(/^\s*Note:\s*$/i.test(L)){D.note=lines.slice(i+1).join("\n").replace(/^(?:[ \t]*\n)+/,"").replace(/\s+$/,"");break;}
     if(/^\s*MONTE ORE\s*$/.test(L)){seen=true;continue;}
+    if(/^\s*GIORNI SINGOLI\s*:/i.test(L)){var xm,xr=/(\d{1,2})\s*\(\s*(\d+)\s*h\s*\)/gi;while((xm=xr.exec(L)))D.extra.push({d:xm[1],h:xm[2]});continue;}
     if((m=L.match(new RegExp("^\\s*("+N+")x(\\d+)(?:\\+("+N+")x(\\d+))?\\s*"+N+"\\s*ORE")))){D.sett=m[1];D.selS=m[2];D.sab=m[3]||"";D.selB=m[4]||"4";found=true;continue;}
     if((m=L.match(new RegExp("^\\s*("+N+")\\s+KO\\b","i"))))D.ko=m[1];
     else if((m=L.match(new RegExp("^\\s*("+N+")\\s+MATT\\b","i"))))D.matt=m[1];
