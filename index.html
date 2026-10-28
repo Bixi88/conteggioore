@@ -113,7 +113,7 @@ input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--acc)
 var DB_URL  = "https://conteggioore-19eab-default-rtdb.europe-west1.firebasedatabase.app";
 var SYNC_PATH = "conteggio_h4w9qz7mk2xv8t";
 
-var KEY="conteggio-v3",IDS=["sett","sab","selS","selB","ko","matt","pom","iban","boll","prot","note"],S={},TOT=0,EX=[],HRS=["4","5","6","7","8"];
+var KEY="conteggio-v3",IDS=["sett","sab","selS","selB","ko","matt","pom","iban","boll","prot","note"],S={},TOT=0,EX=[],HRS=["1","2","3","4","5","6","7","8"];
 var SYNC_URL = DB_URL ? DB_URL.replace(/\/+$/,"")+"/"+SYNC_PATH+".json" : "";
 try{S=JSON.parse(localStorage.getItem(KEY))||{};}catch(e){S={};}
 function n(v){var x=parseFloat(String(v||"").replace(",","."));return isNaN(x)?0:x;}
@@ -148,8 +148,10 @@ function cleanEx(a){
     seen[d]=1;
     out.push({d:String(d),h:HRS.indexOf(String(e.h))>=0?String(e.h):"4"});
   });
+  out.sort(function(a,b){return a.d-b.d;});
   return out;
 }
+function sortEx(){EX.sort(function(a,b){return (a.d?parseInt(a.d,10):999)-(b.d?parseInt(b.d,10):999);});} /* giorni sempre in ordine crescente, righe vuote in fondo */
 function exHours(){var x=0;EX.forEach(function(e){if(e.d)x+=n(e.h);});return x;}
 function renderEx(){
   var box=$("ex"),max=dim();
@@ -171,7 +173,7 @@ function renderEx(){
     hs.value=e.h;
     var xb=document.createElement("button");xb.type="button";xb.className="xb";xb.textContent="×";xb.setAttribute("aria-label","Rimuovi giorno singolo");
     if(!e.d){hs.classList.add("hid");hs.disabled=true;}
-    ds.onchange=function(){e.d=ds.value;if(e.d&&HRS.indexOf(e.h)<0)e.h="4";save();renderEx();calc();};
+    ds.onchange=function(){e.d=ds.value;if(e.d&&HRS.indexOf(e.h)<0)e.h="4";sortEx();save();renderEx();calc();};
     hs.onchange=function(){e.h=hs.value;save();calc();};
     xb.onclick=function(){EX.splice(i,1);save();renderEx();calc();};
     row.appendChild(ds);row.appendChild(hs);row.appendChild(xb);
@@ -202,7 +204,7 @@ function apply(D){
    APP_VERSION cambia a ogni nuova versione del file. All'apertura e quando torni sull'app,
    la pagina controlla (saltando la cache) se online c'è una versione diversa e, se sì, si ricarica.
    I dati sono già salvati a ogni modifica, quindi il ricaricamento non fa perdere nulla. */
-var APP_VERSION="20261028-100000";
+var APP_VERSION="20261028-120000";
 function go(u){location.replace(u);}
 function checkUpdate(){
   try{
