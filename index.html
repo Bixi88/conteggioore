@@ -79,9 +79,7 @@ input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--acc)
 
   <div class="hd m"><h2>CONTRATTI</h2></div>
   <div class="g c">
-    <label for="matt">MATT</label><input id="matt" inputmode="decimal">
-    <label for="pom">POM</label><input id="pom" inputmode="decimal">
-    <div class="lb">ENERGIA</div><div class="r v" id="en">0</div>
+    <label for="ene">ENERGIA</label><input id="ene" inputmode="decimal">
     <label for="ko">KO</label><input id="ko" inputmode="decimal">
   </div>
   <div class="g y">
@@ -113,7 +111,7 @@ input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--acc)
 var DB_URL  = "https://conteggioore-19eab-default-rtdb.europe-west1.firebasedatabase.app";
 var SYNC_PATH = "conteggio_h4w9qz7mk2xv8t";
 
-var KEY="conteggio-v3",IDS=["sett","sab","selS","selB","ko","matt","pom","iban","boll","prot","note"],S={},TOT=0,EX=[],HRS=["1","2","3","4","5","6","7","8"];
+var KEY="conteggio-v3",IDS=["sett","sab","selS","selB","ko","ene","iban","boll","prot","note"],S={},TOT=0,EX=[],HRS=["1","2","3","4","5","6","7","8"];
 var SYNC_URL = DB_URL ? DB_URL.replace(/\/+$/,"")+"/"+SYNC_PATH+".json" : "";
 try{S=JSON.parse(localStorage.getItem(KEY))||{};}catch(e){S={};}
 function n(v){var x=parseFloat(String(v||"").replace(",","."));return isNaN(x)?0:x;}
@@ -126,7 +124,6 @@ function calc(){
   var o4=ore*4,i15=n($("iban").value)*15,b9=n($("boll").value)*9,p4=n($("prot").value)*4;
   $("ore").textContent=f(ore);$("ore4").textContent=f(o4);
   $("iban15").textContent=f(i15);$("boll9").textContent=f(b9);$("prot4").textContent=f(p4);
-  $("en").textContent=f(n($("matt").value)+n($("pom").value));
   TOT=o4+i15+b9+p4;$("tot").textContent=f(TOT);
 }
 
@@ -196,6 +193,8 @@ function apply(D){
     var def=(i=="selS"||i=="selB")?"4":"";
     $(i).value=(D[i]!==undefined&&D[i]!==null)?D[i]:def;
   });
+  /* compatibilità: dati salvati con la vecchia versione (MATT + POM) -> finiscono in ENERGIA */
+  if((D.ene===undefined||D.ene===null)&&(D.matt||D.pom)){var me=n(D.matt)+n(D.pom);$("ene").value=me?String(Math.round(me*100)/100).replace(".",","):"";}
   EX=cleanEx(D.extra);renderEx();
   calc();grow();
 }
@@ -204,7 +203,7 @@ function apply(D){
    APP_VERSION cambia a ogni nuova versione del file. All'apertura e quando torni sull'app,
    la pagina controlla (saltando la cache) se online c'è una versione diversa e, se sì, si ricarica.
    I dati sono già salvati a ogni modifica, quindi il ricaricamento non fa perdere nulla. */
-var APP_VERSION="20261028-120000";
+var APP_VERSION="20261113-120000";
 function go(u){location.replace(u);}
 function checkUpdate(){
   try{
@@ -291,7 +290,6 @@ function buildTxt(){
   var expr=t(sett)+"x"+$("selS").value+(sab>0?"+"+t(sab)+"x"+$("selB").value:"");
   var ore=sett*n($("selS").value)+sab*n($("selB").value)+exHours();
   var exs=EX.filter(function(e){return e.d;}).sort(function(a,b){return a.d-b.d;}).map(function(e){return e.d+" ("+e.h+"h)";});
-  var matt=n($("matt").value),pom=n($("pom").value);
   var i15=n($("iban").value)*15,b9=n($("boll").value)*9,p4=n($("prot").value)*4;
   var tot=ore*4+i15+b9+p4;
   var L=[
@@ -299,7 +297,7 @@ function buildTxt(){
     row(padw(expr,X0)+t(ore)+"ORE",t(ore*4)),D,
     "CONTRATTI",
     row(t(n($("ko").value))+" KO","0"),
-    t(matt+pom)+" ENERGIA",t(matt)+" MATT",t(pom)+" POM",D,
+    t(n($("ene").value))+" ENERGIA",D,
     row(t(n($("iban").value))+" iban",t(i15)),"",
     row(t(n($("boll").value))+" boll",t(b9)),D,
     row(t(n($("prot").value))+"  PROTETTA",t(p4)),D,
@@ -312,7 +310,7 @@ function buildTxt(){
 }
 /* ---- Import .txt (stesso formato del file salvato) ---- */
 function parseTxt(txt){
-  var lines=txt.replace(/^\uFEFF/,"").split(/\r?\n/),D={sett:"",sab:"",selS:"4",selB:"4",ko:"",matt:"",pom:"",iban:"",boll:"",prot:"",note:"",extra:[]},i,m,L,seen=false,found=false,N="[\\d.,]+";
+  var lines=txt.replace(/^\uFEFF/,"").split(/\r?\n/),D={sett:"",sab:"",selS:"4",selB:"4",ko:"",ene:"",matt:"",pom:"",iban:"",boll:"",prot:"",note:"",extra:[]},i,m,L,seen=false,found=false,N="[\\d.,]+";
   for(i=0;i<lines.length;i++){
     L=lines[i];
     if(/^\s*Note:\s*$/i.test(L)){D.note=lines.slice(i+1).join("\n").replace(/^(?:[ \t]*\n)+/,"").replace(/\s+$/,"");break;}
@@ -320,6 +318,7 @@ function parseTxt(txt){
     if(/^\s*GIORNI SINGOLI\s*:/i.test(L)){var xm,xr=/(\d{1,2})\s*\(\s*(\d+)\s*h\s*\)/gi;while((xm=xr.exec(L)))D.extra.push({d:xm[1],h:xm[2]});continue;}
     if((m=L.match(new RegExp("^\\s*("+N+")x(\\d+)(?:\\+("+N+")x(\\d+))?\\s*"+N+"\\s*ORE")))){D.sett=m[1];D.selS=m[2];D.sab=m[3]||"";D.selB=m[4]||"4";found=true;continue;}
     if((m=L.match(new RegExp("^\\s*("+N+")\\s+KO\\b","i"))))D.ko=m[1];
+    else if((m=L.match(new RegExp("^\\s*("+N+")\\s+ENERGIA\\b","i"))))D.ene=m[1];
     else if((m=L.match(new RegExp("^\\s*("+N+")\\s+MATT\\b","i"))))D.matt=m[1];
     else if((m=L.match(new RegExp("^\\s*("+N+")\\s+POM\\b","i"))))D.pom=m[1];
     else if((m=L.match(new RegExp("^\\s*("+N+")\\s+iban\\b","i"))))D.iban=m[1];
