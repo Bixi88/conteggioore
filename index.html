@@ -203,7 +203,7 @@ function apply(D){
    APP_VERSION cambia a ogni nuova versione del file. All'apertura e quando torni sull'app,
    la pagina controlla (saltando la cache) se online c'è una versione diversa e, se sì, si ricarica.
    I dati sono già salvati a ogni modifica, quindi il ricaricamento non fa perdere nulla. */
-var APP_VERSION="20261113-120000";
+var APP_VERSION="20261113-121000";
 function go(u){location.replace(u);}
 function checkUpdate(){
   try{
@@ -296,7 +296,7 @@ function buildTxt(){
     "MONTE ORE",
     row(padw(expr,X0)+t(ore)+"ORE",t(ore*4)),D,
     "CONTRATTI",
-    row(t(n($("ko").value))+" KO","0"),
+    t(n($("ko").value))+" KO",
     t(n($("ene").value))+" ENERGIA",D,
     row(t(n($("iban").value))+" iban",t(i15)),"",
     row(t(n($("boll").value))+" boll",t(b9)),D,
